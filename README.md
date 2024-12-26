@@ -19,3 +19,7 @@ Tools Used
 - Splunk Universal Forwarder for forwarding logs from Linux and Windows machines.
 - Virtual Machines to simulate the lab environment and test automation workflows.
 - VS Code terminal emulator for managing server connections during lab activities.
+
+Network Diagram
+
+![ansible-lab drawio](https://github.com/user-attachments/assets/2c7fc132-3d10-4372-a90d-22f99c470f53)
