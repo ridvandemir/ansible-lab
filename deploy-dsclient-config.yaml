@@ -1,0 +1,128 @@
+---
+- name: Install and Configure Splunk Forwarder
+  hosts: uf_servers
+  become: yes
+
+  vars:
+    splunk_home_path: "/opt/splunkforwarder"
+    splunk_user: "splunkfwd"
+    splunk_group: "splunkfwd"
+    splunk_admin_user: "admin"
+    splunk_admin_password: "changeme"
+    splunk_indexer: "192.168.2.181:9997"
+    splunk_config_path: "/opt/splunkforwarder/etc/apps/lab/local"
+
+  tasks:
+    - name: Download Splunk Forwarder
+      command: "wget -O /tmp/splunkforwarder.tgz https://download.splunk.com/products/universalforwarder/releases/9.3.2/linux/splunkforwarder-9.3.2-d8bb32809498-Linux-x86_64.tgz"
+      args:
+        creates: "/tmp/splunkforwarder.tgz"
+
+    - name: Extract Splunk Forwarder to /opt
+      ansible.builtin.unarchive:
+        src: "/tmp/splunkforwarder.tgz"
+        dest: "/opt/"
+        remote_src: yes
+
+    - name: Add Splunkfwd user
+      ansible.builtin.user:
+        name: "{{ splunk_user }}"
+        system: yes
+        home: "{{ splunk_home_path }}"
+
+    - name: Set Splunkfwd user home directory
+      ansible.builtin.user:
+        name: "{{ splunk_user }}"
+        home: "{{ splunk_home_path }}"
+  
+    - name: Add sudoers config to allow service restarts as Splunkfwd user
+      copy:
+        content: |
+          %splunk ALL = (root) NOPASSWD: /bin/systemctl start Splunkd.service
+          %splunk ALL = (root) NOPASSWD: /bin/systemctl stop Splunkd.service
+          %splunk ALL = (root) NOPASSWD: /bin/systemctl restart Splunkd.service
+        dest: "/etc/sudoers.d/splunk"
+        owner: root
+        group: root
+        mode: '0440'
+
+    - name: Add line to Splunk-launch.conf
+      ansible.builtin.lineinfile:
+        path: "{{ splunk_home_path }}/etc/splunk-launch.conf"
+        line:  OPTIMISTIC_ABOUT_FILE_LOCKING = 1
+        create: yes
+
+    - name: Start Splunk Forwarder and Accept License
+      command: "{{ splunk_home_path }}/bin/splunk start --accept-license --no-prompt --answer-yes"
+      become: true
+      become_method: sudo
+
+    - name: Stop Splunk Forwarder
+      command: "{{ splunk_home_path }}/bin/splunk stop"
+      become: true
+      become_method: sudo
+
+    - name: Create user-seed.conf
+      ansible.builtin.file:
+        path: "{{ splunk_home_path }}/etc/system/local/user-seed.conf"
+        state: touch
+
+    - name: Add username and password to user-seed.conf
+      ansible.builtin.blockinfile:
+        path: "{{ splunk_home_path }}/etc/system/local/user-seed.conf"
+        block: |
+          [user_info]
+          USERNAME = {{ splunk_admin_user }}
+          PASSWORD = {{ splunk_admin_password }}
+        create: yes
+
+    - name: Configure inputs.conf file
+      copy:
+        dest: "{{ splunk_config_path }}/inputs.conf"
+        content: |
+          [monitor:///var/log]
+          disabled = false
+          index = linux
+          sourcetype = syslog
+
+    - name: Configure outputs.conf file
+      copy:
+        dest: "{{ splunk_config_path }}/outputs.conf"
+        content: |
+          [tcpout]
+          defaultGroup = indexers
+
+          [tcpout:indexers]
+          server = {{ splunk_indexer }}
+          compressed = false
+
+    - name: Set splunkforwarder ownership
+      ansible.builtin.file:
+        path: "{{ splunk_home_path }}"
+        owner: "{{ splunk_user }}"
+        group: "{{ splunk_group }}"
+        recurse: yes
+
+    - name: Setup Splunk to start at boot with splunk user
+      command: "{{ splunk_home_path }}/bin/splunk enable boot-start -user {{ splunk_user }}"
+      become: true
+      become_method: sudo
+
+    - name: Start Splunk Forwarder
+      command: "{{ splunk_home_path }}/bin/splunk start"
+      become: true
+      become_method: sudo
+
+    - name: Remove Splunk Forwarder tar file
+      ansible.builtin.file:
+        path: "/tmp/splunkforwarder.tgz"
+        state: absent
+
+#    - name: Configure deployment client
+#      copy:
+#        dest: "{{ splunk_home_path }}/etc/system/local/deploymentclient.conf"
+#        content: |
+#          [target-broker:deploymentServer]
+#          targetUri = {{ splunk_deployment_server }}
+#        owner: "{{ splunk_user }}"
+#        group: "{{ splunk_group }}"

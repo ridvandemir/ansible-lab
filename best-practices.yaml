@@ -1,0 +1,31 @@
+---
+- name: Disable Transparent Huge Pages
+  hosts: splunk_servers
+  become: true
+
+  tasks:
+    - name: Copy the disable-thp to the target server
+      copy:
+        src: /etc/ansible/files/disable_thp
+        dest: /etc/init.d/disable-thp
+
+    - name: Set permissions to executable
+      file:
+        path: /etc/init.d/disable-thp
+        mode: '0755'
+
+    - name: Enable disable-thp to start on boot
+      command: update-rc.d disable-thp defaults
+      args:
+        warn: false
+
+    - name: Start the disable-thp service
+      command: service disable-thp start
+
+    - name: Set ulimits
+      copy:
+        content: |
+          *               hard    nofile          64000
+          *               hard    nproc           16000
+          *               hard    fsize           unlimited
+        dest: /etc/security/limits.conf

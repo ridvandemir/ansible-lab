@@ -1,0 +1,42 @@
+---
+- name: Configure Deployment Server
+  hosts: deployment_server
+  become: yes
+
+  vars:
+    splunk_home_path: "/opt/splunk"
+    splunk_user: "splunk"
+    splunk_group: "splunk"
+    splunk_indexer: "192.168.2.181"
+    splunk_config_path: "/opt/splunk/etc/apps/lab/local"
+
+  tasks:
+    - name: Create output.conf file
+      ansible.builtin.copy:
+        dest: "{{ splunk_config_path }}/output.conf"
+        content: |
+          [tcpout]
+          defaultGroup = indexerGroup
+
+          [tcpout:indexerGroup]
+          server = {{ splunk_indexer }}:9997
+
+    - name: Create web.conf file
+      ansible.builtin.copy:
+        dest: "{{ splunk_config_path }}/web.conf"
+        content: |
+          [settings]
+          enableSplunkWebSSL = true
+          httpport = 8001
+
+    - name: Set Splunk ownership
+      ansible.builtin.file:
+        path: "{{ splunk_home_path }}"
+        owner: "{{ splunk_user }}"
+        group: "{{ splunk_group }}"
+        recurse: yes
+
+    - name: Restart Splunk
+      command: "{{ splunk_home_path }}/bin/splunk restart"
+      become: true
+      become_method: sudo

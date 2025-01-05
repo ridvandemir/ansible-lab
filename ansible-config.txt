@@ -1,0 +1,17 @@
+[splunk_servers]
+searchhead_server
+indexer_server
+deployment server
+
+[searchhead_server]
+192.168.2.66
+
+[indexer_server]
+192.168.2.181
+
+[deployment_server]
+192.168.2.67
+
+[uf_servers]
+192.168.2.166
+192.168.2.45

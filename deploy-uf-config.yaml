@@ -1,0 +1,34 @@
+---
+- name: Configure Splunk Forwarder
+  hosts: uf_servers
+  become: yes
+
+  vars:
+    splunk_home_path: "/opt/splunkforwarder"
+    splunk_user: "splunkfwd"
+    splunk_group: "splunkfwd"
+    splunk_deploymentserver: "192.168.2.67"
+    splunk_config_path: "/opt/splunkforwarder/etc/apps/lab/local"
+
+  tasks:
+    - name: Configure deploymentclient.conf file
+      copy:
+        dest: "{{ splunk_config_path }}/deploymentclient.conf"
+        content: |
+          [target-broker:deploymentServer]
+          targetUri = {{ splunk_deploymentserver }}:8089
+
+          [deployment-client]
+          phoneHomeIntervalInSecs = 120
+
+    - name: Set splunkforwarder ownership
+      ansible.builtin.file:
+        path: "{{ splunk_home_path }}"
+        owner: "{{ splunk_user }}"
+        group: "{{ splunk_group }}"
+        recurse: yes
+
+    - name: Restart Universal Forwarder
+      command: "{{ splunk_home_path }}/bin/splunk restart"
+      become: true
+      become_method: sudo

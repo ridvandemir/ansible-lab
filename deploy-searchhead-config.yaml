@@ -1,0 +1,59 @@
+---
+- name: Configure Search Head
+  hosts: searchhead_server
+  become: yes
+
+  vars:
+    splunk_home_path: "/opt/splunk"
+    splunk_user: "splunk"
+    splunk_group: "splunk"
+    splunk_indexer: "192.168.2.181"
+    splunk_config_path: "/opt/splunk/etc/apps/lab/local"
+
+  tasks:
+    - name: Create inputs.conf file
+      ansible.builtin.copy:
+        dest: "{{ splunk_config_path }}/inputs.conf"
+        content: |
+          [default]
+          host = search-head
+
+    - name: Create outputs.conf file
+      ansible.builtin.copy:
+        dest: "{{ splunk_config_path }}/outputs.conf"
+        content: |
+          [tcpout]
+          defaultGroup = indexerGroup
+
+          [tcpout:indexerGroup]
+          server = {{ splunk_indexer }}:9997
+
+    - name: Create web.conf file
+      ansible.builtin.copy:
+        dest: "{{ splunk_config_path }}/web.conf"
+        content: |
+          [settings]
+          enableSplunkWebSSL = true
+          httpport = 8000
+
+    - name: Create distsearch.conf file
+      ansible.builtin.copy:
+        dest: "{{ splunk_config_path }}/distsearch.conf"
+        content: |
+          [searchhead:settings]
+          distributedSearch = true
+
+          [distributedSearch]
+          servers = {{ splunk_indexer }}:8089
+
+    - name: Set Splunk ownership
+      ansible.builtin.file:
+        path: "{{ splunk_home_path }}"
+        owner: "{{ splunk_user }}"
+        group: "{{ splunk_group }}"
+        recurse: yes
+
+    - name: Restart Splunk
+      command: "{{ splunk_home_path }}/bin/splunk restart"
+      become: true
+      become_method: sudo
