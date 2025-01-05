@@ -2,7 +2,7 @@
 
 Objective
 
-The Ansible Lab project aimed to automate the deployment and configuration of Splunk Enterprise components using Ansible. This lab focused on streamlining the setup of Splunk Search Head, Indexer, and Universal Forwarder across multiple servers. By leveraging Ansible’s capabilities, the project emphasized efficient configuration management, automated deployments, and repeatable infrastructure provisioning of Splunk environments.
+The Ansible Lab project aimed to automate the deployment and configuration of Splunk Enterprise components using Ansible. This lab focused on streamlining the setup of Splunk Search Head, Indexer, Deployment Server and Universal Forwarders across multiple servers. By leveraging Ansible’s capabilities, the project emphasized efficient configuration management, automated deployments, and repeatable infrastructure provisioning of Splunk environments.
 
 Skills Learned
 
@@ -15,8 +15,7 @@ Skills Learned
 Tools Used
 
 - Ansible for automation of deployment and configuration tasks.
-- Splunk Enterprise.
-- Splunk Universal Forwarder for forwarding logs from Linux and Windows machines.
+- Splunk Enterprise and Splunk Universal Forwarder.
 - Virtual Machines to simulate the lab environment and test automation workflows.
 - VS Code terminal emulator for managing server connections during lab activities.
 
