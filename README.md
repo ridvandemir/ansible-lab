@@ -22,4 +22,4 @@ Tools Used
 
 Network Diagram
 
-![ansible-lab drawio](https://github.com/user-attachments/assets/2c7fc132-3d10-4372-a90d-22f99c470f53)
+![ansible-lab drawio](https://github.com/user-attachments/assets/fc29f2cb-ebb8-4115-a893-7094a3b488d4)
