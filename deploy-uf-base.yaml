@@ -28,11 +28,6 @@
         name: "{{ splunk_user }}"
         system: yes
         home: "{{ splunk_home_path }}"
-
-    - name: Set Splunkfwd user home directory
-      ansible.builtin.user:
-        name: "{{ splunk_user }}"
-        home: "{{ splunk_home_path }}"
   
     - name: Add sudoers config to allow service restarts as Splunkfwd user
       copy:
@@ -44,12 +39,6 @@
         owner: root
         group: root
         mode: '0440'
-
-    - name: Add line to Splunk-launch.conf
-      ansible.builtin.lineinfile:
-        path: "{{ splunk_home_path }}/etc/splunk-launch.conf"
-        line:  OPTIMISTIC_ABOUT_FILE_LOCKING = 1
-        create: yes
 
     - name: Start Splunk Forwarder and Accept License
       command: "{{ splunk_home_path }}/bin/splunk start --accept-license --no-prompt --answer-yes"
