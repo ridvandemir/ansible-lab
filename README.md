@@ -33,7 +33,7 @@ Steps
     - b 2048: Sets the length (in bits) of the key. Here, it's set to 2048 bits, which is secure for most purposes.
     - C "ansible@ansible.com": Adds a comment to the key. This is useful for identifying the key later, especially in environments with multiple keys. In this case, the comment is ansible@ansible.com.
     - f /home/ansible/.ssh/ansible_rsa: Specifies the file path and name where the key pair will be saved. The private key will be saved as /home/ansible/.ssh/ansible_rsa, and the public key will be saved as /home/ansible/.ssh/ansible_rsa.pub.
-    # -N "": Sets the passphrase for the private key. In this case, an empty string ("") means the key is not encrypted with a passphrase.
+    - N "": Sets the passphrase for the private key. In this case, an empty string ("") means the key is not encrypted with a passphrase.
 - I changed the permission of the files
   - sudo chmod 600 /home/rido/.ssh/ansible_rsa
   - sudo chmod 644 /home/rido/.ssh/ansible_rsa.pub
